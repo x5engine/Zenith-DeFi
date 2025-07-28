@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 const TransactionsContainer = styled.div`
   background-color: #2a2a2a;
