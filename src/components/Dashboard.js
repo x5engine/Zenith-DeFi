@@ -6,37 +6,81 @@ import QuickActionsSection from './dashboard/QuickActionsSection';
 import TokenList from './dashboard/TokenList';
 
 const DashboardContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #000000;
+  overflow: hidden;
+`;
+
+const MainContent = styled.div`
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+`;
+
+const ContentArea = styled.div`
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+  background: #000000;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #000000;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #8b5cf6;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #a855f7;
+  }
+`;
+
+const ContentGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 300px;
-  grid-template-rows: auto auto auto;
-  gap: 20px;
+  grid-template-columns: 1fr 400px;
+  gap: 40px;
   height: 100%;
 `;
 
-const MainGrid = styled.div`
+const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 40px;
+  min-height: 0;
 `;
 
-const SidePanel = styled.div`
+const RightColumn = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 40px;
+  min-height: 0;
 `;
 
 const Dashboard = () => {
   return (
     <DashboardContainer>
-      <MainGrid>
-        <StatusSection />
-        <TransactionsSection />
-        <QuickActionsSection />
-      </MainGrid>
-      
-      <SidePanel>
-        <TokenList />
-      </SidePanel>
+      <MainContent>
+        <ContentArea>
+          <ContentGrid>
+            <LeftColumn>
+              <StatusSection />
+              <TransactionsSection />
+              <QuickActionsSection />
+            </LeftColumn>
+            <RightColumn>
+              <TokenList />
+            </RightColumn>
+          </ContentGrid>
+        </ContentArea>
+      </MainContent>
     </DashboardContainer>
   );
 };

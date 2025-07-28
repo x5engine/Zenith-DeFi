@@ -4,11 +4,22 @@ import { User, Star, Settings } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const StatusContainer = styled.div`
-  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-  border-radius: 16px;
+  background: #000000;
+  border-radius: 0;
   padding: 32px;
-  border: 1px solid #2a2a2a;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  border: 3px solid #8b5cf6;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%);
+  }
 `;
 
 const SectionHeader = styled.div`
@@ -17,33 +28,38 @@ const SectionHeader = styled.div`
 
 const SectionTitle = styled.h2`
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 900;
   color: #ffffff;
   margin-bottom: 6px;
   letter-spacing: -0.025em;
+  text-transform: uppercase;
+  text-shadow: 0 4px 16px rgba(139, 92, 246, 0.5);
 `;
 
 const SectionSubtitle = styled.p`
-  font-size: 15px;
-  color: #808080;
-  font-weight: 500;
+  font-size: 14px;
+  color: #666666;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 `;
 
 const MainGrid = styled.div`
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 24px;
   margin-bottom: 32px;
 `;
 
 const MainCard = styled.div`
-  background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
-  border-radius: 16px;
+  background: #0a0a0a;
+  border-radius: 0;
   padding: 32px;
-  border: 1px solid #3a3a3a;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border: 3px solid #1a1a1a;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8);
   position: relative;
   overflow: hidden;
+  grid-column: span 2;
 
   &::before {
     content: '';
@@ -51,28 +67,39 @@ const MainCard = styled.div`
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 100%);
+    height: 3px;
+    background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #8b5cf6 50%, transparent 100%);
   }
 `;
 
 const MainValue = styled.div`
   font-size: 42px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+  font-weight: 900;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 24px;
   letter-spacing: -0.02em;
+  text-shadow: 0 4px 16px rgba(139, 92, 246, 0.5);
 `;
 
 const StatusCard = styled.div`
-  background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
-  border-radius: 16px;
+  background: #0a0a0a;
+  border-radius: 0;
   padding: 24px;
-  border: 1px solid #3a3a3a;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 3px solid #1a1a1a;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8);
   position: relative;
   overflow: hidden;
 
@@ -82,8 +109,18 @@ const StatusCard = styled.div`
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: ${props => props.gradient || 'linear-gradient(90deg, #8b5cf6 0%, #a855f7 100%)'};
+    height: 3px;
+    background: ${props => props.gradient || 'linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%)'};
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #8b5cf6 50%, transparent 100%);
   }
 `;
 
@@ -96,32 +133,47 @@ const CardHeader = styled.div`
 const CardIcon = styled.div`
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16px;
   background: ${props => props.color};
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+  border: 2px solid #8b5cf6;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: ${props => props.color};
+    z-index: -1;
+  }
 `;
 
 const CardTitle = styled.div`
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 900;
   color: #ffffff;
   letter-spacing: -0.01em;
+  text-transform: uppercase;
 `;
 
 const CardSubtitle = styled.div`
-  font-size: 13px;
-  color: #808080;
-  font-weight: 500;
+  font-size: 12px;
+  color: #666666;
+  font-weight: 700;
   margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 `;
 
 const ChartContainer = styled.div`
-  height: 220px;
+  height: 180px;
   margin-top: 20px;
 `;
 
@@ -134,11 +186,13 @@ const ChartData = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 16px;
-  font-size: 13px;
-  color: #808080;
-  font-weight: 500;
+  font-size: 12px;
+  color: #666666;
+  font-weight: 700;
   padding: 12px 0;
-  border-top: 1px solid #3a3a3a;
+  border-top: 2px solid #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 `;
 
 const StatusSection = () => {
@@ -173,15 +227,17 @@ const StatusSection = () => {
           <ChartContainer>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                <XAxis dataKey="name" stroke="#808080" fontSize={12} />
-                <YAxis stroke="#808080" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+                <XAxis dataKey="name" stroke="#666666" fontSize={12} fontWeight={700} />
+                <YAxis stroke="#666666" fontSize={12} fontWeight={700} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#1a1a1a', 
-                    border: '1px solid #3a3a3a',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)'
+                    backgroundColor: '#000000', 
+                    border: '2px solid #8b5cf6',
+                    borderRadius: '0',
+                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
+                    color: '#ffffff',
+                    fontWeight: 700
                   }}
                 />
                 <Line type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={3} dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }} />
@@ -192,19 +248,21 @@ const StatusSection = () => {
           <BarContainer>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                <XAxis dataKey="name" stroke="#808080" fontSize={12} />
-                <YAxis stroke="#808080" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+                <XAxis dataKey="name" stroke="#666666" fontSize={12} fontWeight={700} />
+                <YAxis stroke="#666666" fontSize={12} fontWeight={700} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#1a1a1a', 
-                    border: '1px solid #3a3a3a',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)'
+                    backgroundColor: '#000000', 
+                    border: '2px solid #8b5cf6',
+                    borderRadius: '0',
+                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
+                    color: '#ffffff',
+                    fontWeight: 700
                   }}
                 />
-                <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="value" fill="#10b981" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="value" fill="#8b5cf6" radius={[0, 0, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </BarContainer>
@@ -218,9 +276,9 @@ const StatusSection = () => {
           </ChartData>
         </MainCard>
 
-        <StatusCard gradient="linear-gradient(90deg, #8b5cf6 0%, #a855f7 100%)">
+        <StatusCard gradient="linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%)">
           <CardHeader>
-            <CardIcon color="linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)">
+            <CardIcon color="linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%)">
               <User size={24} color="white" />
             </CardIcon>
             <div>
@@ -231,15 +289,17 @@ const StatusSection = () => {
           <ChartContainer>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                <XAxis dataKey="name" stroke="#808080" fontSize={11} />
-                <YAxis stroke="#808080" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+                <XAxis dataKey="name" stroke="#666666" fontSize={10} fontWeight={700} />
+                <YAxis stroke="#666666" fontSize={10} fontWeight={700} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#1a1a1a', 
-                    border: '1px solid #3a3a3a',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)'
+                    backgroundColor: '#000000', 
+                    border: '2px solid #8b5cf6',
+                    borderRadius: '0',
+                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
+                    color: '#ffffff',
+                    fontWeight: 700
                   }}
                 />
                 <Line type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 3 }} />
@@ -249,9 +309,9 @@ const StatusSection = () => {
           </ChartContainer>
         </StatusCard>
 
-        <StatusCard gradient="linear-gradient(90deg, #10b981 0%, #059669 100%)">
+        <StatusCard gradient="linear-gradient(90deg, #10b981 0%, #059669 50%, #10b981 100%)">
           <CardHeader>
-            <CardIcon color="linear-gradient(135deg, #10b981 0%, #059669 100%)">
+            <CardIcon color="linear-gradient(135deg, #10b981 0%, #059669 50%, #10b981 100%)">
               <Star size={24} color="white" />
             </CardIcon>
             <div>
@@ -262,15 +322,17 @@ const StatusSection = () => {
           <ChartContainer>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                <XAxis dataKey="name" stroke="#808080" fontSize={11} />
-                <YAxis stroke="#808080" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+                <XAxis dataKey="name" stroke="#666666" fontSize={10} fontWeight={700} />
+                <YAxis stroke="#666666" fontSize={10} fontWeight={700} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#1a1a1a', 
-                    border: '1px solid #3a3a3a',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)'
+                    backgroundColor: '#000000', 
+                    border: '2px solid #8b5cf6',
+                    borderRadius: '0',
+                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
+                    color: '#ffffff',
+                    fontWeight: 700
                   }}
                 />
                 <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444', strokeWidth: 2, r: 3 }} />
@@ -284,9 +346,9 @@ const StatusSection = () => {
           </ChartData>
         </StatusCard>
 
-        <StatusCard gradient="linear-gradient(90deg, #f59e0b 0%, #f97316 100%)">
+        <StatusCard gradient="linear-gradient(90deg, #f59e0b 0%, #f97316 50%, #f59e0b 100%)">
           <CardHeader>
-            <CardIcon color="linear-gradient(135deg, #f59e0b 0%, #f97316 100%)">
+            <CardIcon color="linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #f59e0b 100%)">
               <Settings size={24} color="white" />
             </CardIcon>
             <div>
@@ -297,15 +359,17 @@ const StatusSection = () => {
           <ChartContainer>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                <XAxis dataKey="name" stroke="#808080" fontSize={11} />
-                <YAxis stroke="#808080" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+                <XAxis dataKey="name" stroke="#666666" fontSize={10} fontWeight={700} />
+                <YAxis stroke="#666666" fontSize={10} fontWeight={700} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#1a1a1a', 
-                    border: '1px solid #3a3a3a',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)'
+                    backgroundColor: '#000000', 
+                    border: '2px solid #8b5cf6',
+                    borderRadius: '0',
+                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
+                    color: '#ffffff',
+                    fontWeight: 700
                   }}
                 />
                 <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444', strokeWidth: 2, r: 3 }} />

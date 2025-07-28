@@ -5,72 +5,99 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0a0a0a;
+  background-color: #000000;
   color: #ffffff;
-  font-weight: 500;
-  line-height: 1.4;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-x: hidden;
+  font-size: 14px;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: 'JetBrains Mono', source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
-/* Professional scrollbar */
+/* Aggressive scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3a3a3a;
-  border-radius: 3px;
+  background: #8b5cf6;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a4a4a;
+  background: #a855f7;
 }
 
 /* Sharp focus styles */
 *:focus {
   outline: 2px solid #8b5cf6;
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 
-/* Professional text rendering */
+/* Aggressive text rendering */
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
+  font-weight: 800;
   letter-spacing: -0.025em;
+  text-transform: uppercase;
 }
 
 /* Sharp borders and shadows */
 .card, .sidebar, .header {
-  border: 1px solid #2a2a2a;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border: 2px solid #1a1a1a;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
 }
 
-/* Professional gradients */
+/* Aggressive gradients */
 .gradient-purple {
-  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%);
 }
 
 .gradient-green {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #10b981 100%);
 }
 
 .gradient-orange {
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #f59e0b 100%);
 }
 
 /* Sharp transitions */
 * {
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Aggressive selection */
+::selection {
+  background: #8b5cf6;
+  color: #ffffff;
+}
+
+/* Sharp borders */
+.border-sharp {
+  border: 2px solid #2a2a2a;
+  border-radius: 0;
+}
+
+/* Professional shadows */
+.shadow-aggressive {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(139, 92, 246, 0.2);
+}
+
+/* Sharp text */
+.text-sharp {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
 } 
