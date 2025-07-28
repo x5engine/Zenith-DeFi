@@ -14,3 +14,14 @@ Key Features:
 The hub acts as a liquidity coordinator, maintaining active state channels with multiple exchanges while using 1inch's deep liquidity pools for optimal token swaps. This creates a robust network effect where each new integrated exchange exponentially increases the system's utility.
 
 Our solution dramatically improves capital efficiency by enabling users to move funds between exchanges and DeFi protocols without waiting for on-chain confirmations, while maintaining the security guarantees of the Ethereum network
+
+
+Zenith DeFi's architecture combines cutting-edge technologies to create a seamless, secure, and efficient cross-exchange experience:
+
+Technical Stack:
+• Frontend: React.js with MobX for state management, utilizing 1inch's SDK for swap calculations
+• Backend: High-performance Rust implementation for the state channel hub
+• State Channels: @statechannels SDK integration for secure off-chain transactions
+• Exchange Integration: Custom-built adapters for Coinbase and Bitfinex APIs
+• Smart Contracts: Solidity contracts for on-chain settlement and dispute resolution
+
