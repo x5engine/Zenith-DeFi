@@ -4,6 +4,7 @@ import StatusSection from './dashboard/StatusSection';
 import TransactionsSection from './dashboard/TransactionsSection';
 import QuickActionsSection from './dashboard/QuickActionsSection';
 import TokenList from './dashboard/TokenList';
+import SwapInterface from './SwapInterface';
 
 const DashboardContainer = styled.div`
   display: flex;
@@ -50,6 +51,11 @@ const ContentGrid = styled.div`
   height: 100%;
 `;
 
+const SwapSection = styled.div`
+  grid-column: 1 / -1;
+  margin-bottom: 40px;
+`;
+
 const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
@@ -70,6 +76,9 @@ const Dashboard = () => {
       <MainContent>
         <ContentArea>
           <ContentGrid>
+            <SwapSection>
+              <SwapInterface />
+            </SwapSection>
             <LeftColumn>
               <StatusSection />
               <TransactionsSection />

@@ -1,397 +1,189 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../../stores/StoreContext';
 import styled from 'styled-components';
-import { User, Star, Settings } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const StatusContainer = styled.div`
-  background: #000000;
-  border-radius: 0;
-  padding: 32px;
-  border: 3px solid #8b5cf6;
-  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8);
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%);
-  }
-`;
-
-const SectionHeader = styled.div`
-  margin-bottom: 32px;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 24px;
-  font-weight: 900;
-  color: #ffffff;
-  margin-bottom: 6px;
-  letter-spacing: -0.025em;
-  text-transform: uppercase;
-  text-shadow: 0 4px 16px rgba(139, 92, 246, 0.5);
-`;
-
-const SectionSubtitle = styled.p`
-  font-size: 14px;
-  color: #666666;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
-const MainGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 32px;
-`;
-
-const MainCard = styled.div`
-  background: #0a0a0a;
-  border-radius: 0;
-  padding: 32px;
-  border: 3px solid #1a1a1a;
-  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8);
-  position: relative;
-  overflow: hidden;
-  grid-column: span 2;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%);
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, #8b5cf6 50%, transparent 100%);
-  }
-`;
-
-const MainValue = styled.div`
-  font-size: 42px;
-  font-weight: 900;
-  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 24px;
-  letter-spacing: -0.02em;
-  text-shadow: 0 4px 16px rgba(139, 92, 246, 0.5);
-`;
-
-const StatusCard = styled.div`
-  background: #0a0a0a;
-  border-radius: 0;
+  background: #2a2a2a;
+  border-radius: 12px;
   padding: 24px;
-  border: 3px solid #1a1a1a;
-  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: ${props => props.gradient || 'linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%)'};
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, #8b5cf6 50%, transparent 100%);
-  }
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  align-items: center;
   margin-bottom: 20px;
 `;
 
-const CardIcon = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-  background: ${props => props.color};
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-  border: 2px solid #8b5cf6;
-  position: relative;
+const StatusTitle = styled.h2`
+  color: #ffffff;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 600;
+`;
 
-  &::before {
+const StatusTimeline = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const TimelineItem = styled.li`
+  position: relative;
+  padding: 16px 0 16px 40px;
+  border-left: 2px solid #555;
+  margin-left: 20px;
+  
+  &:before {
     content: '';
     position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: ${props => props.color};
-    z-index: -1;
+    left: -8px;
+    top: 20px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: ${props => {
+      if (props.status === 'complete') return '#28a745';
+      if (props.status === 'active') return '#007bff';
+      return '#555';
+    }};
+    border: 2px solid #2a2a2a;
   }
+  
+  &:last-child {
+    border-left: none;
+  }
+  
+  ${props => props.status === 'complete' && `
+    border-left-color: #28a745;
+  `}
+  
+  ${props => props.status === 'active' && `
+    border-left-color: #007bff;
+  `}
 `;
 
-const CardTitle = styled.div`
-  font-size: 16px;
-  font-weight: 900;
+const StepTitle = styled.strong`
+  display: block;
   color: #ffffff;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
 `;
 
-const CardSubtitle = styled.div`
-  font-size: 12px;
-  color: #666666;
-  font-weight: 700;
-  margin-top: 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+const StepDescription = styled.p`
+  color: #cccccc;
+  font-size: 0.9rem;
+  margin: 0;
 `;
 
-const ChartContainer = styled.div`
-  height: 180px;
-  margin-top: 20px;
+const ConfirmationCount = styled.span`
+  color: #007bff;
+  font-weight: 600;
 `;
 
-const BarContainer = styled.div`
-  height: 120px;
-  margin-top: 20px;
-`;
-
-const ChartData = styled.div`
-  display: flex;
-  justify-content: space-between;
+const StatusMessage = styled.div`
+  background: #3a3a3a;
+  border-radius: 8px;
+  padding: 16px;
   margin-top: 16px;
-  font-size: 12px;
-  color: #666666;
-  font-weight: 700;
-  padding: 12px 0;
-  border-top: 2px solid #1a1a1a;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  border-left: 4px solid #007bff;
 `;
 
-const StatusSection = () => {
-  // Mock data for charts
-  const lineData = [
-    { name: 'Jan', value: 400 },
-    { name: 'Feb', value: 300 },
-    { name: 'Mar', value: 600 },
-    { name: 'Apr', value: 800 },
-    { name: 'May', value: 500 },
-    { name: 'Jun', value: 900 },
-  ];
+const StatusSection = observer(() => {
+  const { exchangeStore } = useStores();
 
-  const barData = [
-    { name: 'A', value: 400 },
-    { name: 'B', value: 300 },
-    { name: 'C', value: 600 },
-    { name: 'D', value: 800 },
-    { name: 'E', value: 500 },
+  const getStepClass = (currentStatus, stepStatus) => {
+    const statusOrder = ['IDLE', 'QUOTING', 'QUOTED', 'INITIATING', 'PENDING_DEPOSIT', 'CONFIRMED', 'EVM_FULFILLED', 'COMPLETED'];
+    
+    const currentIndex = statusOrder.indexOf(currentStatus);
+    const stepIndex = statusOrder.indexOf(stepStatus);
+    
+    if (currentIndex === -1 || stepIndex === -1) return 'pending';
+    
+    if (currentIndex > stepIndex) return 'complete';
+    if (currentIndex === stepIndex) return 'active';
+    return 'pending';
+  };
+
+  const getStepDescription = (stepStatus) => {
+    switch (stepStatus) {
+      case 'PENDING_DEPOSIT':
+        return exchangeStore.swapStatus === 'PENDING_DEPOSIT' 
+          ? exchangeStore.statusMessage 
+          : 'Completed';
+      case 'CONFIRMED':
+        return exchangeStore.swapStatus === 'CONFIRMED' 
+          ? `Confirming... (${exchangeStore.confirmationCount}/3)` 
+          : 'Pending';
+      case 'EVM_FULFILLED':
+        return exchangeStore.swapStatus === 'EVM_FULFILLED' 
+          ? 'Processing...' 
+          : 'Pending';
+      case 'COMPLETED':
+        return exchangeStore.swapStatus === 'COMPLETED' 
+          ? 'Success!' 
+          : 'Pending';
+      default:
+        return 'Pending';
+    }
+  };
+
+  const steps = [
+    {
+      status: 'PENDING_DEPOSIT',
+      title: 'Step 1: Awaiting Deposit',
+      description: getStepDescription('PENDING_DEPOSIT')
+    },
+    {
+      status: 'CONFIRMED',
+      title: 'Step 2: Bitcoin Confirmation',
+      description: getStepDescription('CONFIRMED')
+    },
+    {
+      status: 'EVM_FULFILLED',
+      title: 'Step 3: Fulfilling on EVM Chain',
+      description: getStepDescription('EVM_FULFILLED')
+    },
+    {
+      status: 'COMPLETED',
+      title: 'Step 4: Swap Complete',
+      description: getStepDescription('COMPLETED')
+    }
   ];
 
   return (
     <StatusContainer>
-      <SectionHeader>
-        <SectionTitle>State Flateh Sttatus</SectionTitle>
-        <SectionSubtitle>Fisde tieth tire damned/7/18 3776</SectionSubtitle>
-      </SectionHeader>
-
-      <MainGrid>
-        <MainCard>
-          <MainValue>$82.10</MainValue>
-          <ChartContainer>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
-                <XAxis dataKey="name" stroke="#666666" fontSize={12} fontWeight={700} />
-                <YAxis stroke="#666666" fontSize={12} fontWeight={700} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#000000', 
-                    border: '2px solid #8b5cf6',
-                    borderRadius: '0',
-                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
-                    color: '#ffffff',
-                    fontWeight: 700
-                  }}
-                />
-                <Line type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={3} dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }} />
-                <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-          <BarContainer>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
-                <XAxis dataKey="name" stroke="#666666" fontSize={12} fontWeight={700} />
-                <YAxis stroke="#666666" fontSize={12} fontWeight={700} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#000000', 
-                    border: '2px solid #8b5cf6',
-                    borderRadius: '0',
-                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
-                    color: '#ffffff',
-                    fontWeight: 700
-                  }}
-                />
-                <Bar dataKey="value" fill="#10b981" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="value" fill="#8b5cf6" radius={[0, 0, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </BarContainer>
-          <ChartData>
-            <span>000</span>
-            <span>00</span>
-            <span>806%</span>
-            <span>1829</span>
-            <span>40</span>
-            <span>08.8</span>
-          </ChartData>
-        </MainCard>
-
-        <StatusCard gradient="linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%)">
-          <CardHeader>
-            <CardIcon color="linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #8b5cf6 100%)">
-              <User size={24} color="white" />
-            </CardIcon>
-            <div>
-              <CardTitle>11027</CardTitle>
-              <CardSubtitle>STTEE UPT</CardSubtitle>
-            </div>
-          </CardHeader>
-          <ChartContainer>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
-                <XAxis dataKey="name" stroke="#666666" fontSize={10} fontWeight={700} />
-                <YAxis stroke="#666666" fontSize={10} fontWeight={700} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#000000', 
-                    border: '2px solid #8b5cf6',
-                    borderRadius: '0',
-                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
-                    color: '#ffffff',
-                    fontWeight: 700
-                  }}
-                />
-                <Line type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 3 }} />
-                <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </StatusCard>
-
-        <StatusCard gradient="linear-gradient(90deg, #10b981 0%, #059669 50%, #10b981 100%)">
-          <CardHeader>
-            <CardIcon color="linear-gradient(135deg, #10b981 0%, #059669 50%, #10b981 100%)">
-              <Star size={24} color="white" />
-            </CardIcon>
-            <div>
-              <CardTitle>coinestars</CardTitle>
-              <CardSubtitle>Acesta trop</CardSubtitle>
-            </div>
-          </CardHeader>
-          <ChartContainer>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
-                <XAxis dataKey="name" stroke="#666666" fontSize={10} fontWeight={700} />
-                <YAxis stroke="#666666" fontSize={10} fontWeight={700} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#000000', 
-                    border: '2px solid #8b5cf6',
-                    borderRadius: '0',
-                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
-                    color: '#ffffff',
-                    fontWeight: 700
-                  }}
-                />
-                <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444', strokeWidth: 2, r: 3 }} />
-                <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-          <ChartData>
-            <span>T.9 31</span>
-            <span>0217</span>
-          </ChartData>
-        </StatusCard>
-
-        <StatusCard gradient="linear-gradient(90deg, #f59e0b 0%, #f97316 50%, #f59e0b 100%)">
-          <CardHeader>
-            <CardIcon color="linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #f59e0b 100%)">
-              <Settings size={24} color="white" />
-            </CardIcon>
-            <div>
-              <CardTitle>Terme Ootlimer</CardTitle>
-              <CardSubtitle>Dismete U</CardSubtitle>
-            </div>
-          </CardHeader>
-          <ChartContainer>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
-                <XAxis dataKey="name" stroke="#666666" fontSize={10} fontWeight={700} />
-                <YAxis stroke="#666666" fontSize={10} fontWeight={700} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#000000', 
-                    border: '2px solid #8b5cf6',
-                    borderRadius: '0',
-                    boxShadow: '0 16px 64px rgba(0, 0, 0, 0.8)',
-                    color: '#ffffff',
-                    fontWeight: 700
-                  }}
-                />
-                <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444', strokeWidth: 2, r: 3 }} />
-                <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-          <ChartData>
-            <span>P1010</span>
-            <span>D</span>
-            <span>DOWSITI</span>
-            <span>DES</span>
-            <span>$500</span>
-            <span>80</span>
-            <span>88 Pe</span>
-            <span>1634,80 Me</span>
-            <span>1810</span>
-          </ChartData>
-        </StatusCard>
-      </MainGrid>
+      <StatusTitle>Swap Progress</StatusTitle>
+      
+      {exchangeStore.swapStatus !== 'IDLE' ? (
+        <>
+          <StatusTimeline>
+            {steps.map((step, index) => (
+              <TimelineItem 
+                key={index}
+                status={getStepClass(exchangeStore.swapStatus, step.status)}
+              >
+                <StepTitle>{step.title}</StepTitle>
+                <StepDescription>
+                  {step.status === 'CONFIRMED' && exchangeStore.swapStatus === 'CONFIRMED' ? (
+                    <>
+                      Confirming... (<ConfirmationCount>{exchangeStore.confirmationCount}</ConfirmationCount>/3)
+                    </>
+                  ) : (
+                    step.description
+                  )}
+                </StepDescription>
+              </TimelineItem>
+            ))}
+          </StatusTimeline>
+          
+          <StatusMessage>
+            <strong>Current Status:</strong> {exchangeStore.statusMessage}
+          </StatusMessage>
+        </>
+      ) : (
+        <StepDescription>
+          No active swap. Start a new swap to see progress here.
+        </StepDescription>
+      )}
     </StatusContainer>
   );
-};
+});
 
 export default StatusSection; 

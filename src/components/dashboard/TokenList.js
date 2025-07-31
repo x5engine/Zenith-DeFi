@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { ChevronRight, User, Star } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 const TokenListContainer = styled.div`
   background: #000000;

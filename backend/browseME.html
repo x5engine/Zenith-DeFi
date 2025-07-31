@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1inch Fusion+ | The Future of Cross-Chain Swaps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #f95d6a, #ff7c43);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .flow-arrow::after {
+            content: '→';
+            font-size: 2rem;
+            color: #ff7c43;
+            margin: 0 1rem;
+        }
+        .flow-arrow:last-child::after {
+            content: '';
+        }
+        .pyramid-level {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%);
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+         .pyramid-level-2 {
+            clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+        }
+         .pyramid-level-3 {
+            clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
+        }
+    </style>
+</head>
+<body class="bg-[#003f5c] text-white">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center my-12">
+            <h1 class="text-4xl md:text-6xl font-black uppercase tracking-wide">1inch Fusion+</h1>
+            <p class="text-xl md:text-2xl font-light text-gray-300 mt-2">A Deep Dive into Trustless Cross-Chain Interoperability</p>
+        </header>
+
+        <main class="space-y-16">
+
+            <section class="text-center bg-[#2f4b7c]/50 rounded-2xl p-8">
+                <h2 class="text-2xl font-bold text-[#ffa600]">The Paradigm Shift</h2>
+                <p class="mt-2 text-lg text-gray-300 max-w-3xl mx-auto">1inch Fusion+ moves beyond traditional, imperative DEX swaps to a declarative, intent-based model. This fundamental change transfers execution risk from the user to professional resolvers, enabling gasless, MEV-protected transactions.</p>
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                    <div class="bg-[#003f5c] p-6 rounded-lg border border-gray-700">
+                        <h3 class="text-xl font-bold text-red-400">Traditional DEX Swaps (Imperative)</h3>
+                        <ul class="mt-4 space-y-2 list-disc list-inside text-gray-300">
+                            <li><span class="font-semibold">User's Burden:</span> User constructs, signs, and broadcasts the transaction.</li>
+                            <li><span class="font-semibold">Gas Fees:</span> User pays all network fees directly.</li>
+                            <li><span class="font-semibold">MEV Exposure:</span> Vulnerable to front-running and sandwich attacks.</li>
+                            <li><span class="font-semibold">Execution Risk:</span> User manages slippage and bears the risk of failed transactions.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-[#003f5c] p-6 rounded-lg border border-green-400">
+                        <h3 class="text-xl font-bold text-green-400">1inch Fusion+ Swaps (Intent-Based)</h3>
+                        <ul class="mt-4 space-y-2 list-disc list-inside text-gray-300">
+                            <li><span class="font-semibold">User's Burden:</span> User signs a single, off-chain message declaring their intent.</li>
+                            <li><span class="font-semibold">Gas Fees:</span> "Gasless" experience; resolvers pay fees, priced into the rate.</li>
+                            <li><span class="font-semibold">MEV Exposure:</span> Inherently protected through a private relayer network.</li>
+                            <li><span class="font-semibold">Execution Risk:</span> Transferred entirely to the professional resolver.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-3xl font-bold text-center mb-2">The Trustless Core: HTLCs</h2>
+                <p class="text-center text-lg text-gray-300 max-w-3xl mx-auto mb-8">Atomic swaps are powered by Hashed Timelock Contracts (HTLCs), which ensure that a cross-chain trade is "all-or-nothing," eliminating counterparty risk without a centralized bridge.</p>
+                <div class="bg-[#2f4b7c]/50 rounded-2xl p-8 flex flex-col md:flex-row justify-around items-center space-y-8 md:space-y-0 md:space-x-8">
+                    <div class="text-center">
+                        <div class="text-6xl">🔒</div>
+                        <h3 class="text-2xl font-bold mt-2 text-[#f95d6a]">Hashlock</h3>
+                        <p class="mt-2 text-gray-300 max-w-xs">Funds are locked with a cryptographic hash `H(S)`. They can only be unlocked by revealing the original secret `S`.</p>
+                    </div>
+                    <div class="text-5xl font-bold text-[#ffa600]">+</div>
+                    <div class="text-center">
+                        <div class="text-6xl">⏳</div>
+                        <h3 class="text-2xl font-bold mt-2 text-[#ff7c43]">Timelock</h3>
+                        <p class="mt-2 text-gray-300 max-w-xs">A safety mechanism. If the secret is not revealed within a set time, funds are automatically returned to their original owner.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-3xl font-bold text-center mb-8">The Fusion+ Ecosystem</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-[#2f4b7c]/50 p-6 rounded-2xl text-center">
+                        <div class="text-5xl mb-4">👤</div>
+                        <h3 class="text-2xl font-bold text-[#ffa600]">The Maker</h3>
+                        <p class="mt-2 text-gray-300">The end-user who initiates the swap by signing an off-chain message with their desired outcome.</p>
+                    </div>
+                    <div class="bg-[#2f4b7c]/50 p-6 rounded-2xl text-center">
+                        <div class="text-5xl mb-4">⚙️</div>
+                        <h3 class="text-2xl font-bold text-[#ffa600]">The Resolver</h3>
+                        <p class="mt-2 text-gray-300">A professional market maker who competes to fill the maker's order, paying all gas fees and executing the swap.</p>
+                    </div>
+                    <div class="bg-[#2f4b7c]/50 p-6 rounded-2xl text-center md:col-span-2 lg:col-span-1">
+                        <div class="text-5xl mb-4">📡</div>
+                        <h3 class="text-2xl font-bold text-[#ffa600]">The Relayer</h3>
+                        <p class="mt-2 text-gray-300">A centralized 1inch service that broadcasts intents to resolvers and coordinates the swap process.</p>
+                    </div>
+                </div>
+                 <div class="mt-8 bg-[#2f4b7c]/50 rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-center text-[#ffa600]">Resolver Economic Stake</h3>
+                    <p class="text-center text-lg text-gray-300 max-w-3xl mx-auto mt-2 mb-6">To ensure network integrity, resolvers must stake 1INCH tokens equivalent to at least 5% of the total "Unicorn Power," aligning their incentives with the health of the protocol.</p>
+                    <div class="chart-container h-64 md:h-80">
+                        <canvas id="resolverStakeChart"></canvas>
+                    </div>
+                </div>
+            </section>
+            
+            <section>
+                <h2 class="text-3xl font-bold text-center mb-8">The Four-Phase Swap Lifecycle</h2>
+                <div class="flex flex-col md:flex-row justify-center items-center text-center flex-wrap">
+                    <div class="p-4 flow-arrow">
+                        <div class="text-2xl font-bold text-[#f95d6a]">1. Announcement</div>
+                        <p class="text-gray-300">Maker signs intent; Relayer starts Dutch auction.</p>
+                    </div>
+                    <div class="p-4 flow-arrow">
+                        <div class="text-2xl font-bold text-[#ff7c43]">2. Deposit</div>
+                        <p class="text-gray-300">Resolver locks funds in HTLC escrows on both chains.</p>
+                    </div>
+                    <div class="p-4 flow-arrow">
+                        <div class="text-2xl font-bold text-[#ffa600]">3. Withdrawal</div>
+                        <p class="text-gray-300">Secret is revealed; both parties withdraw their assets.</p>
+                    </div>
+                    <div class="p-4">
+                        <div class="text-2xl font-bold text-gray-500">4. Recovery</div>
+                        <p class="text-gray-300">(Optional) Timelock expires; funds are returned.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-3xl font-bold text-center mb-8">The Multi-Chain Universe</h2>
+                <p class="text-center text-lg text-gray-300 max-w-3xl mx-auto mb-8">Fusion+ is live on a growing network of EVM-compatible chains, providing a vast landscape for interoperability. The SDK uses specific `NetworkEnum` values for integration.</p>
+                <div class="bg-[#2f4b7c]/50 rounded-2xl p-8 overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="border-b border-gray-600 text-[#ffa600]">
+                            <tr>
+                                <th class="p-4">Chain Name</th>
+                                <th class="p-4">Chain ID</th>
+                                <th class="p-4">NetworkEnum (SDK)</th>
+                                <th class="p-4">Native Currency</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-300">
+                            <tr class="border-b border-gray-700">
+                                <td class="p-4">Ethereum</td>
+                                <td class="p-4">1</td>
+                                <td class="p-4 font-mono">ETHEREUM</td>
+                                <td class="p-4">ETH</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="p-4">BNB Smart Chain</td>
+                                <td class="p-4">56</td>
+                                <td class="p-4 font-mono">BINANCE</td>
+                                <td class="p-4">BNB</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="p-4">Polygon</td>
+                                <td class="p-4">137</td>
+                                <td class="p-4 font-mono">POLYGON</td>
+                                <td class="p-4">MATIC</td>
+                            </tr>
+                             <tr class="border-b border-gray-700">
+                                <td class="p-4">Arbitrum</td>
+                                <td class="p-4">42161</td>
+                                <td class="p-4 font-mono">ARBITRUM</td>
+                                <td class="p-4">ETH</td>
+                            </tr>
+                             <tr>
+                                <td class="p-4">Avalanche</td>
+                                <td class="p-4">43114</td>
+                                <td class="p-4 font-mono">AVALANCHE</td>
+                                <td class="p-4">AVAX</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section>
+                 <h2 class="text-3xl font-bold text-center mb-8">The Bitcoin Frontier</h2>
+                 <p class="text-center text-lg text-gray-300 max-w-3xl mx-auto mb-8">Integrating Bitcoin's ~$1T market cap is the ultimate goal. Developers can choose between a pragmatic approach using Wrapped BTC or tackle the grand prize challenge of native integration.</p>
+                 <div class="bg-[#2f4b7c]/50 rounded-2xl p-8">
+                     <h3 class="text-2xl font-bold text-center text-[#ffa600]">Native BTC vs. Wrapped BTC (wBTC) Market Cap</h3>
+                     <p class="text-center text-gray-300 mt-2 mb-6">The vast difference in market capitalization highlights the immense opportunity in building a trustless, native BTC integration.</p>
+                     <div class="chart-container">
+                        <canvas id="btcMarketCapChart"></canvas>
+                    </div>
+                 </div>
+            </section>
+            
+            <section>
+                <h2 class="text-3xl font-bold text-center mb-8">A Strategic Blueprint for Hackathon Success</h2>
+                <div class="w-full max-w-md mx-auto flex flex-col items-center space-y-[-2rem]">
+                    <div class="w-full h-32 pyramid-level-3 bg-[#f95d6a] flex flex-col justify-center items-center text-center p-4">
+                        <h3 class="text-xl font-black">Tier 3: The Grand Prize Winner</h3>
+                        <p class="text-sm">Tackle a non-EVM bounty; present a PoC for native Bitcoin HTLCs.</p>
+                    </div>
+                    <div class="w-10/12 h-32 pyramid-level-2 bg-[#ff7c43] flex flex-col justify-center items-center text-center p-4">
+                        <h3 class="text-lg font-bold">Tier 2: The Contender</h3>
+                        <p class="text-sm">Integrate multiple EVM chains and other 1inch APIs.</p>
+                    </div>
+                    <div class="w-8/12 h-32 pyramid-level bg-[#ffa600] flex flex-col justify-center items-center text-center p-4">
+                        <h3 class="text-md font-semibold">Tier 1: The MVP</h3>
+                        <p class="text-sm">Build a dApp with a secure proxy for a single swap path (e.g., wBTC).</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="text-center mt-16 py-8 border-t border-gray-700">
+            <p class="text-gray-400">Infographic generated based on the technical analysis of the 1inch Fusion+ Protocol.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
+
+        const wrapLabels = (label) => {
+            const max = 16;
+            if (label.length <= max) return label;
+            const words = label.split(' ');
+            let lines = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + ' ' + word).length > max) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine += (currentLine ? ' ' : '') + word;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        };
+        
+        const chartColors = {
+            primary: '#f95d6a',
+            secondary: '#ff7c43',
+            accent: '#ffa600',
+            bgDark: '#2f4b7c',
+            bgLight: '#665191',
+            text: '#FFFFFF'
+        };
+
+        new Chart(document.getElementById('resolverStakeChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Required Resolver Stake', 'Other Unicorn Power'],
+                datasets: [{
+                    data: [5, 95],
+                    backgroundColor: [chartColors.primary, chartColors.bgDark],
+                    borderColor: '#003f5c',
+                    borderWidth: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: chartColors.text, font: { size: 14 } }
+                    },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('btcMarketCapChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Native BTC', 'Wrapped BTC (wBTC)'],
+                datasets: [{
+                    label: 'Market Capitalization (in USD Trillions)',
+                    data: [1.3, 0.015],
+                    backgroundColor: [chartColors.accent, chartColors.primary],
+                    borderColor: [chartColors.accent, chartColors.primary],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { color: chartColors.text },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    y: {
+                        ticks: { color: chartColors.text, font: { size: 14 } },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -38,4 +38,16 @@ export const useOneInchStore = () => {
 export const useExchangeStore = () => {
   const store = useStore();
   return store.exchangeStore;
+};
+
+// Hook to use all stores (for components that need multiple stores)
+export const useStores = () => {
+  const store = useStore();
+  return {
+    exchangeStore: store.exchangeStore,
+    walletService: store.walletService,
+    apiService: store.apiService,
+    stateChannelStore: store.stateChannelStore,
+    oneInchStore: store.oneInchStore
+  };
 }; 

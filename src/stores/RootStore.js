@@ -2,6 +2,8 @@ import { makeAutoObservable } from 'mobx';
 import StateChannelStore from './StateChannelStore';
 import OneInchStore from './OneInchStore';
 import ExchangeStore from './ExchangeStore';
+import ApiService from '../services/ApiService';
+import WalletService from '../services/WalletService';
 
 /**
  * RootStore - Main application store that coordinates all other stores
@@ -23,10 +25,14 @@ class RootStore {
   constructor() {
     makeAutoObservable(this);
     
-    // Initialize all stores
+    // Initialize services
+    this.apiService = new ApiService('http://localhost:8080');
+    this.walletService = new WalletService();
+    
+    // Initialize all stores with dependency injection
     this.stateChannelStore = new StateChannelStore();
     this.oneInchStore = new OneInchStore();
-    this.exchangeStore = new ExchangeStore();
+    this.exchangeStore = new ExchangeStore(this, this.apiService, this.walletService);
     
     // Global application state
     this.appState = {
