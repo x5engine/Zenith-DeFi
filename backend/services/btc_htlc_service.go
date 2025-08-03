@@ -185,29 +185,29 @@ func (s *BtcHtlcService) RedeemHtlc(fundingTxHash *chainhash.Hash, htlcScript []
 // system would use a more robust mechanism like ZeroMQ notifications.
 func (s *BtcHtlcService) MonitorForDeposit(htlcAddress btcutil.Address, expectedAmount btcutil.Amount) (*chainhash.Hash, error) {
 	log.Printf("[BTC_SERVICE] Monitoring for deposit of %s to address %s", expectedAmount, htlcAddress)
-	
+
 	// In a real app, this would be a long-running background task.
 	// For demo purposes, we'll just check recent transactions.
-	
+
 	// This is a placeholder. A real implementation would need to scan the mempool
 	// and confirmed blocks, which is complex. For a hackathon, you might
 	// create a specific RPC call on your node to check this, or simply
 	// have a manual step in your demo.
-	
+
 	// A simple way to simulate this is to check listunspent for that address.
 	// This requires importing the address into the node's wallet first.
 	err := s.client.ImportAddressRescan(htlcAddress.EncodeAddress(), "htlc_swap", false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to import address for monitoring: %v", err)
 	}
-	
+
 	// Loop for a few minutes to check for the deposit
 	for i := 0; i < 30; i++ {
 		unspent, err := s.client.ListUnspentMinMaxAddresses(0, 999999, []btcutil.Address{htlcAddress})
 		if err != nil {
 			return nil, fmt.Errorf("error checking for unspent txs: %v", err)
 		}
-		
+
 		for _, u := range unspent {
 			amount, _ := btcutil.NewAmount(u.Amount)
 			if amount == expectedAmount {
@@ -222,7 +222,6 @@ func (s *BtcHtlcService) MonitorForDeposit(htlcAddress btcutil.Address, expected
 	return nil, fmt.Errorf("deposit not detected within timeout period")
 }
 
-
 // mustPayToAddrScript is a helper to panic on script creation failure.
 func mustPayToAddrScript(addr btcutil.Address) []byte {
 	script, err := txscript.PayToAddrScript(addr)
@@ -230,4 +229,30 @@ func mustPayToAddrScript(addr btcutil.Address) []byte {
 		panic(err)
 	}
 	return script
+}
+
+// SendBitcoinToUser sends Bitcoin directly from the resolver address to the user's destination address.
+// This is used in the final step of the swap to deliver Bitcoin to the user.
+func (s *BtcHtlcService) SendBitcoinToUser(toAddress string, amountBTC float64) (string, error) {
+	log.Printf("[BTC_SERVICE] Sending %.8f BTC from resolver to %s", amountBTC, toAddress)
+
+	// Convert BTC to satoshis
+	amountSatoshis := btcutil.Amount(amountBTC * 1e8)
+
+	// Parse the destination address
+	destAddr, err := btcutil.DecodeAddress(toAddress, s.net)
+	if err != nil {
+		return "", fmt.Errorf("invalid destination address: %v", err)
+	}
+
+	// Use bitcoin-cli sendtoaddress for simplicity in regtest mode
+	// In production, you'd want more sophisticated transaction construction
+	txHash, err := s.client.SendToAddress(destAddr, amountSatoshis)
+	if err != nil {
+		log.Printf("[BTC_SERVICE] ERROR: Failed to send Bitcoin: %v", err)
+		return "", fmt.Errorf("failed to send Bitcoin: %v", err)
+	}
+
+	log.Printf("[BTC_SERVICE] ✅ Bitcoin sent successfully! TxHash: %s", txHash.String())
+	return txHash.String(), nil
 }

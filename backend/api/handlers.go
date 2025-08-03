@@ -24,9 +24,12 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
 	"fusion-btc-resolver/common"
 	"fusion-btc-resolver/orchestrator"
@@ -35,12 +38,14 @@ import (
 // Handlers holds dependencies for the API handlers, primarily the orchestrator.
 type Handlers struct {
 	Orchestrator *orchestrator.SwapOrchestrator
+	quotes       map[string]*common.QuoteResponse // Store quotes by ID
 }
 
 // NewHandlers creates a new Handlers struct with its dependencies.
 func NewHandlers(o *orchestrator.SwapOrchestrator) *Handlers {
 	return &Handlers{
 		Orchestrator: o,
+		quotes:       make(map[string]*common.QuoteResponse),
 	}
 }
 
@@ -58,8 +63,27 @@ func (h *Handlers) InitiateSwap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Look up the quote to get the actual BTC amount
+	quote, exists := h.quotes[req.QuoteID]
+	if !exists {
+		log.Printf("ERROR: Quote not found: %s", req.QuoteID)
+		WriteError(w, http.StatusBadRequest, "Invalid or expired quote ID")
+		return
+	}
+
+	// Convert satoshis back to BTC for the orchestrator
+	satoshis, err := strconv.ParseInt(quote.ToTokenAmount, 10, 64)
+	if err != nil {
+		log.Printf("ERROR: Failed to parse BTC amount: %v", err)
+		WriteError(w, http.StatusInternalServerError, "Invalid quote amount")
+		return
+	}
+	btcAmount := float64(satoshis) / 1e8 // Convert satoshis to BTC
+
+	log.Printf("[INITIATE] Using quote %s: %.8f BTC for swap", req.QuoteID, btcAmount)
+
 	// Call the orchestrator to start the swap process
-	resp, err := h.Orchestrator.InitiateSwap(&req)
+	resp, err := h.Orchestrator.InitiateSwapWithAmount(&req, btcAmount)
 	if err != nil {
 		log.Printf("ERROR: Failed to initiate swap: %v", err)
 		WriteError(w, http.StatusInternalServerError, "Failed to initiate swap")
@@ -100,25 +124,45 @@ func (h *Handlers) GetQuote(w http.ResponseWriter, r *http.Request) {
 	// and potentially other market data sources. For this hackathon, we are
 	// focusing on the swap execution lifecycle. This handler serves as a
 	// placeholder for that future functionality.
-	
+
 	if r.Method != http.MethodPost {
 		WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
-	
+
 	var req common.QuoteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		WriteError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
-	
-	// Placeholder response
-	resp := &common.QuoteResponse{
-		ToTokenAmount: "1500000000000000000", // 1.5 ETH
-		Fee:           "50000000000000000",   // 0.05 ETH
-		EstimatedTime: 300,                   // 5 minutes
-		QuoteID:       "quote-placeholder-123",
+
+	// Log the received quote request including BTC destination address
+	log.Printf("[QUOTE] Request: %+v", req)
+	if req.BtcDestinationAddress != "" {
+		log.Printf("[QUOTE] BTC Destination Address: %s", req.BtcDestinationAddress)
 	}
+
+	// Calculate proper BTC amount based on ETH input
+	// Convert from wei to ETH, then ETH to BTC (demo rate: 1 ETH = 0.375 BTC)
+	amountEthWei := req.Amount                 // Amount in wei
+	amountEth := parseWeiToFloat(amountEthWei) // Convert to ETH
+	btcPerEth := 0.375                         // Demo exchange rate
+	amountBtc := amountEth * btcPerEth         // Calculate BTC amount
+	amountSatoshis := int64(amountBtc * 1e8)   // Convert to satoshis
+
+	log.Printf("[QUOTE] Converting %.8f ETH to %.8f BTC (%d satoshis)", amountEth, amountBtc, amountSatoshis)
+
+	// Return proper BTC amount in satoshis as string
+	resp := &common.QuoteResponse{
+		ToTokenAmount: fmt.Sprintf("%d", amountSatoshis), // BTC amount in satoshis
+		Fee:           "50000000000000000",               // 0.05 ETH fee
+		EstimatedTime: 300,                               // 5 minutes
+		QuoteID:       fmt.Sprintf("quote-%d", time.Now().Unix()),
+	}
+
+	// Store the quote for later use during swap initiation
+	h.quotes[resp.QuoteID] = resp
+	log.Printf("[QUOTE] Stored quote %s: %.8f BTC", resp.QuoteID, amountBtc)
 
 	WriteJSON(w, http.StatusOK, resp)
 }
@@ -137,4 +181,15 @@ func WriteJSON(w http.ResponseWriter, status int, data interface{}) {
 func WriteError(w http.ResponseWriter, status int, message string) {
 	errorResponse := map[string]string{"error": message}
 	WriteJSON(w, status, errorResponse)
+}
+
+// parseWeiToFloat converts a wei amount string to ETH float64
+func parseWeiToFloat(weiStr string) float64 {
+	wei, err := strconv.ParseFloat(weiStr, 64)
+	if err != nil {
+		log.Printf("ERROR: Failed to parse wei amount: %v", err)
+		return 0
+	}
+	// Convert wei to ETH (1 ETH = 1e18 wei)
+	return wei / 1e18
 }

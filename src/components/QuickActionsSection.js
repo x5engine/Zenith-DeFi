@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores/StoreContext';
 import styled from 'styled-components';
+import BitcoinWalletGuide from './BitcoinWalletGuide';
 
 const QuickActionsContainer = styled.div`
   background: #2a2a2a;
@@ -151,8 +152,11 @@ const QuickActionsSection = observer(() => {
   const [amount, setAmount] = useState('0.01');
   const [fromToken, setFromToken] = useState('ETH');
   const [toToken, setToToken] = useState('BTC');
+  const [btcDestinationAddress, setBtcDestinationAddress] = useState(exchangeStore.btcDestinationAddress || '');
   const [inputError, setInputError] = useState('');
+  const [btcAddressError, setBtcAddressError] = useState('');
   const [isDebouncing, setIsDebouncing] = useState(false);
+  const [showWalletGuide, setShowWalletGuide] = useState(false);
   
   const debounceTimer = useRef(null);
   const fromDropdownRef = useRef();
@@ -171,6 +175,13 @@ const QuickActionsSection = observer(() => {
     };
     return tokenAddresses[token] || token;
   };
+
+  // Sync component BTC address state with store state
+  useEffect(() => {
+    if (exchangeStore.btcDestinationAddress !== btcDestinationAddress) {
+      setBtcDestinationAddress(exchangeStore.btcDestinationAddress || '');
+    }
+  }, [exchangeStore.btcDestinationAddress, btcDestinationAddress]);
 
   // Click outside handler for dropdowns
   useEffect(() => {
@@ -215,6 +226,25 @@ const QuickActionsSection = observer(() => {
     return true;
   };
 
+  // Bitcoin address validation (supports mainnet, testnet, and regtest)
+  const validateBtcAddress = (address) => {
+    if (!address || address.trim() === '') {
+      setBtcAddressError('BTC destination address is required');
+      return false;
+    }
+
+    // Bitcoin address validation (mainnet, testnet, regtest)
+    const btcAddressRegex = /^(bc1|[13]|tb1|[2mn]|bcrt1|[2n])[a-zA-HJ-NP-Z0-9]{25,87}$/;
+    
+    if (!btcAddressRegex.test(address.trim())) {
+      setBtcAddressError('Please enter a valid Bitcoin address');
+      return false;
+    }
+
+    setBtcAddressError('');
+    return true;
+  };
+
   const handleAmountChange = (e) => {
     const value = e.target.value;
     setAmount(value);
@@ -233,11 +263,29 @@ const QuickActionsSection = observer(() => {
     }, 300);
   };
 
+  const handleBtcAddressChange = (e) => {
+    const value = e.target.value;
+    setBtcDestinationAddress(value);
+    
+    // Also update the store to keep them in sync
+    exchangeStore.btcDestinationAddress = value;
+    
+    // Validate immediately for better UX
+    if (value.trim() !== '') {
+      validateBtcAddress(value);
+    } else {
+      setBtcAddressError('');
+    }
+  };
+
   // Determine button state and text
   const getButtonState = () => {
     const isConnected = walletService.isConnected();
     const hasAmount = amount && amount.trim() !== '';
     const hasValidAmount = hasAmount && !inputError && !isDebouncing;
+    const needsBtcAddress = toToken === 'BTC';
+    const hasBtcAddress = needsBtcAddress ? btcDestinationAddress.trim() !== '' : true;
+    const hasValidBtcAddress = needsBtcAddress ? !btcAddressError && hasBtcAddress : true;
     const isQuoting = exchangeStore.swapStatus === 'QUOTING';
     const hasQuote = exchangeStore.swapStatus === 'QUOTED';
     const isProcessing = exchangeStore.isProcessing;
@@ -261,6 +309,22 @@ const QuickActionsSection = observer(() => {
     if (!hasValidAmount || isDebouncing) {
       return {
         text: 'Validating...',
+        disabled: true,
+        variant: 'default'
+      };
+    }
+
+    if (needsBtcAddress && !hasBtcAddress) {
+      return {
+        text: 'Enter BTC Address',
+        disabled: true,
+        variant: 'default'
+      };
+    }
+
+    if (needsBtcAddress && !hasValidBtcAddress) {
+      return {
+        text: 'Invalid BTC Address',
         disabled: true,
         variant: 'default'
       };
@@ -315,7 +379,8 @@ const QuickActionsSection = observer(() => {
         fromTokenAddress: getTokenAddress(fromToken), // ETH address
         toChainId: 0, // Bitcoin (non-EVM)
         toTokenAddress: toToken, // "BTC"
-        amount: (parseFloat(amount) * 1e18).toString() // Convert to wei for ETH
+        amount: (parseFloat(amount) * 1e18).toString(), // Convert to wei for ETH
+        btcDestinationAddress: toToken === 'BTC' ? btcDestinationAddress.trim() : undefined
       };
       
       await exchangeStore.fetchQuote(params);
@@ -385,7 +450,6 @@ const QuickActionsSection = observer(() => {
             step="0.001"
             min="0.001"
             max="10"
-            min="0"
           />
           {inputError && <ErrorMessage>{inputError}</ErrorMessage>}
         </div>
@@ -399,6 +463,110 @@ const QuickActionsSection = observer(() => {
           {buttonState.text}
         </ActionButton>
       </FormRow>
+
+      {/* BTC Destination Address Field - Only show when converting to BTC */}
+      {toToken === 'BTC' && (
+        <FormRow>
+          <div style={{ flex: 1 }}>
+            <div style={{ 
+              marginBottom: '12px', 
+              fontSize: '14px', 
+              color: '#ccc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <span>📱 Where will you receive your Bitcoin?</span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const testAddress = 'bcrt1q7dp2ceypu7695utwjwzs3qs2nqxt4060a7yymn';
+                    setBtcDestinationAddress(testAddress);
+                    exchangeStore.btcDestinationAddress = testAddress;
+                    // Clear any validation errors
+                    setBtcAddressError('');
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    border: 'none',
+                    color: 'white',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'transform 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                  title="Use your regtest Bitcoin address for local testing"
+                >
+                  🧪 Use Test Address
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowWalletGuide(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #8b5cf6, #06b6d4)',
+                    border: 'none',
+                    color: 'white',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'transform 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  💡 Need Help?
+                </button>
+              </div>
+            </div>
+            <Input 
+              type="text" 
+              placeholder="Paste your Bitcoin address here (bc1/1/3 for mainnet, bcrt1 for regtest)" 
+              value={btcDestinationAddress}
+              onChange={handleBtcAddressChange}
+              hasError={!!btcAddressError}
+              style={{ fontFamily: 'monospace', fontSize: '14px' }}
+            />
+            {btcAddressError && <ErrorMessage>{btcAddressError}</ErrorMessage>}
+            {!btcAddressError && btcDestinationAddress && (
+              <div style={{ 
+                fontSize: '12px', 
+                color: '#10b981', 
+                marginTop: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                ✓ Valid Bitcoin address
+              </div>
+            )}
+            <div style={{ 
+              fontSize: '11px', 
+              color: '#888', 
+              marginTop: '6px',
+              lineHeight: '1.4'
+            }}>
+              {btcDestinationAddress && btcDestinationAddress.startsWith('bcrt1') ? (
+                <span>🧪 <strong>Using regtest address</strong> - Perfect for local Bitcoin node testing!</span>
+              ) : (
+                <span>💡 <strong>Testing locally?</strong> Click "🧪 Use Test Address" or "💡 Need Help?" for wallet options</span>
+              )}
+            </div>
+          </div>
+        </FormRow>
+      )}
+      
+      {/* Bitcoin Wallet Guide Modal */}
+      <BitcoinWalletGuide 
+        isOpen={showWalletGuide} 
+        onClose={() => setShowWalletGuide(false)} 
+      />
     </QuickActionsContainer>
   );
 });

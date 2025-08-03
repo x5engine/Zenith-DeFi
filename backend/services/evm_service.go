@@ -112,16 +112,26 @@ func NewEvmService(cfg *config.EvmConfig) (*EvmService, error) {
 func (s *EvmService) DepositIntoEscrow(userAddress common.Address, amount *big.Int, secretHash [32]byte, lockTime *big.Int) (*types.Transaction, error) {
 	log.Printf("[EVM_SERVICE] Creating escrow for %d wei, user %s, secretHash %x", amount, userAddress.Hex(), secretHash)
 
-	// Create transaction options with authentication
+	// Demo mode: Skip real blockchain transaction
+	if s.cfg.DemoMode {
+		log.Printf("[EVM_SERVICE] DEMO MODE: Simulating escrow creation (skipping real transaction)")
+
+		// Create a dummy transaction for demo
+		dummyTx := &types.Transaction{}
+		dummyHash := "0xdemo1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+
+		log.Printf("[EVM_SERVICE] DEMO: Escrow transaction simulated: %s", dummyHash)
+		return dummyTx, nil
+	}
+
+	// Real mode: Create actual blockchain transaction
 	auth, err := s.createAuth()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create auth: %v", err)
 	}
 
-	// For demo: use a mock token address (would be USDT/USDC in production)
 	tokenAddress := common.HexToAddress("0x0000000000000000000000000000000000000000") // ETH
 
-	// Call the real settlement contract
 	tx, err := s.settlementContract.CreateEscrow(auth, secretHash, userAddress, tokenAddress, amount, lockTime)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create escrow: %v", err)
@@ -158,13 +168,16 @@ func (s *EvmService) MonitorForClaimEvent(secretHash [32]byte) ([]byte, error) {
 			// In reality, this would filter blockchain logs
 			time.Sleep(2 * time.Second)
 
-			// Return a demo secret for testing
+			// In demo mode, return the original secret hash to simulate successful revelation
 			// In production, this would come from parsing real blockchain events
-			demoSecret := [32]byte{}
-			copy(demoSecret[:], []byte("demo-secret-from-evm-chain"))
-
 			log.Printf("[EVM_SERVICE] Demo: Simulating secret revelation")
-			return demoSecret[:], nil
+
+			// For demo: Generate a secret that would hash to the expected secretHash
+			// In reality, this would be extracted from blockchain events
+			demoSecret := make([]byte, 32)
+			copy(demoSecret, secretHash[:]) // Use the hash as the secret for demo
+
+			return demoSecret, nil
 		}
 	}
 }

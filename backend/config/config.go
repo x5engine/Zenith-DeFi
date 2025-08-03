@@ -36,16 +36,18 @@ import (
 
 // BtcConfig holds all configuration specific to the Bitcoin node connection.
 type BtcConfig struct {
-	RPCUser string `env:"BTC_RPC_USER,required"`
-	RPCPass string `env:"BTC_RPC_PASS,required"`
-	RPCHost string `env:"BTC_RPC_HOST" envDefault:"localhost:18443"` // Default for regtest
+	RPCUser         string `env:"BTC_RPC_USER,required"`
+	RPCPass         string `env:"BTC_RPC_PASS,required"`
+	RPCHost         string `env:"BTC_RPC_HOST" envDefault:"localhost:18443"`                                      // Default for regtest
+	ResolverAddress string `env:"BTC_RESOLVER_ADDRESS" envDefault:"bcrt1qwa29ncycnamh4mmy495zpl0vk9tgyfdxwn0ptu"` // Resolver's BTC address for sending
 }
 
 // EvmConfig holds all configuration for connecting to an EVM-compatible chain.
 type EvmConfig struct {
-	RPCURL       string `env:"EVM_RPC_URL,required"`
-	PrivateKey   string `env:"EVM_PRIVATE_KEY,required"` // The resolver's hot wallet private key
-	ChainID      int64  `env:"EVM_CHAIN_ID,required"`
+	RPCURL     string `env:"EVM_RPC_URL,required"`
+	PrivateKey string `env:"EVM_PRIVATE_KEY,required"` // The resolver's hot wallet private key
+	ChainID    int64  `env:"EVM_CHAIN_ID,required"`
+	DemoMode   bool   `env:"DEMO_MODE" envDefault:"false"`
 }
 
 // OneInchConfig holds configuration for the 1inch Developer Portal API.

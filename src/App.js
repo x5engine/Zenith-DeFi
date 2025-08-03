@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { StoreProvider } from './stores/StoreContext';
 import { ToastProvider } from './components/ToastProvider';
+import { AdvancedModeProvider, useAdvancedMode } from './contexts/AdvancedModeContext';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -26,20 +27,28 @@ const ContentArea = styled.div`
   overflow-y: auto;
 `;
 
+const AppContent = () => {
+  return (
+    <AppContainer>
+      <Sidebar />
+      <MainContent>
+        <Header />
+        <ContentArea>
+          <Dashboard />
+        </ContentArea>
+      </MainContent>
+      <ChainIndicator />
+    </AppContainer>
+  );
+};
+
 function App() {
   return (
     <StoreProvider>
       <ToastProvider>
-        <AppContainer>
-          <Sidebar />
-          <MainContent>
-            <Header />
-            <ContentArea>
-              <Dashboard />
-            </ContentArea>
-          </MainContent>
-          <ChainIndicator />
-        </AppContainer>
+        <AdvancedModeProvider>
+          <AppContent />
+        </AdvancedModeProvider>
       </ToastProvider>
     </StoreProvider>
   );
