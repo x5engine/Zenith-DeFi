@@ -279,14 +279,13 @@ class ExchangeStore {
         // Format amounts with realistic demo conversion
         const fromAmount = formatAmount(requestParams.amount, 18); // ETH in wei
         
-        // For demo: Convert the wei response to a realistic BTC amount
-        // 1 ETH ≈ 0.000025 BTC (rough rate), so scale down the response
+        // Convert the API response amount to display format
         let toAmount;
         if (toToken === 'BTC') {
-            // Scale down the wei amount to realistic BTC amount (divide by ~40000 for demo rate)
-            const btcAmountWei = Number(apiResponse.toTokenAmount);
-            const realisticBtcAmount = btcAmountWei / 1e18 / 40000; // ~0.000025 BTC per ETH
-            toAmount = realisticBtcAmount.toFixed(8).replace(/\.?0+$/, '');
+            // Backend returns toTokenAmount in satoshis, convert to BTC
+            const satoshis = Number(apiResponse.toTokenAmount);
+            const btcAmount = satoshis / 1e8; // Convert satoshis to BTC
+            toAmount = btcAmount.toFixed(8).replace(/\.?0+$/, '');
         } else {
             toAmount = formatAmount(apiResponse.toTokenAmount, toToken === 'BTC' ? 8 : 18);
         }
