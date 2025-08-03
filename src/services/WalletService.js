@@ -106,6 +106,15 @@ class WalletService {
             localStorage.setItem('walletConnected', 'true');
             localStorage.setItem('walletAddress', this.connectedAddress);
 
+            // Immediately check and prompt for correct network
+            try {
+                await this.ensureCorrectNetwork();
+                console.log('✅ Network check passed - connected to Polygon Amoy');
+            } catch (networkError) {
+                console.warn('⚠️ Network check failed:', networkError);
+                // Don't throw - let user continue but they'll be prompted when getting quotes
+            }
+
             return this.connectedAddress;
         } catch (error) {
             console.error('Error connecting wallet:', error);
@@ -297,6 +306,72 @@ class WalletService {
     onChainChange(callback) {
         if (window.ethereum) {
             window.ethereum.on('chainChanged', callback);
+        }
+    }
+
+    /**
+     * Ensure the user is connected to the correct network (Polygon Amoy)
+     * @returns {Promise<boolean>} True if connected to correct network
+     */
+    async ensureCorrectNetwork() {
+        const TARGET_CHAIN_ID = '0x13882'; // Hex for Polygon Amoy (80002)
+        const TARGET_CHAIN_NAME = 'Polygon Amoy';
+
+        if (!window.ethereum) {
+            alert("🚨 No crypto wallet found! Please install MetaMask.");
+            throw new Error("No crypto wallet found");
+        }
+
+        const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+
+        if (currentChainId === TARGET_CHAIN_ID) {
+            console.log("✅ Correct network connected - Polygon Amoy");
+            return true;
+        }
+
+        // Show immediate alert for wrong network
+        const networkNames = {
+            '0x1': 'Ethereum Mainnet',
+            '0x89': 'Polygon Mainnet', 
+            '0x13881': 'Polygon Mumbai (Deprecated)',
+            '0x13882': 'Polygon Amoy',
+            '0x539': 'Local Testnet (1337)'
+        };
+        const currentNetworkName = networkNames[currentChainId] || `Unknown (${currentChainId})`;
+        
+        alert(`🚨 WRONG NETWORK!\n\nCurrent: ${currentNetworkName}\nRequired: Polygon Amoy\n\nPlease switch networks to continue!`);
+
+        // If not on the correct network, prompt the user to switch.
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: TARGET_CHAIN_ID }],
+            });
+            return true;
+        } catch (switchError) {
+            // This error code indicates that the chain has not been added to MetaMask.
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [
+                            {
+                                chainId: TARGET_CHAIN_ID,
+                                chainName: TARGET_CHAIN_NAME,
+                                rpcUrls: ['https://rpc-amoy.polygon.technology/'],
+                                nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
+                                blockExplorerUrls: ['https://amoy.polygonscan.com/'],
+                            },
+                        ],
+                    });
+                    return true;
+                } catch (addError) {
+                    console.error("Failed to add network:", addError);
+                    return false;
+                }
+            }
+            console.error("Failed to switch network:", switchError);
+            return false;
         }
     }
 }

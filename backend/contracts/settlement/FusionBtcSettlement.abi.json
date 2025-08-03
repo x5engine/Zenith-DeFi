@@ -1,0 +1,251 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "whitelistResolver",
+    "inputs": [
+      {
+        "name": "resolver",
+        "type": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createEscrow",
+    "inputs": [
+      {
+        "name": "secretHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "name": "timelock",
+        "type": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "claimEscrow",
+    "inputs": [
+      {
+        "name": "secretHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "secret",
+        "type": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "refundEscrow",
+    "inputs": [
+      {
+        "name": "secretHash",
+        "type": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getEscrow",
+    "inputs": [
+      {
+        "name": "secretHash",
+        "type": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "name": "resolver",
+        "type": "address"
+      },
+      {
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "name": "timelock",
+        "type": "uint256"
+      },
+      {
+        "name": "claimed",
+        "type": "bool"
+      },
+      {
+        "name": "refunded",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "escrows",
+    "inputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "name": "resolver",
+        "type": "address"
+      },
+      {
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "name": "timelock",
+        "type": "uint256"
+      },
+      {
+        "name": "claimed",
+        "type": "bool"
+      },
+      {
+        "name": "refunded",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "SecretRevealed",
+    "inputs": [
+      {
+        "name": "secretHash",
+        "type": "bytes32",
+        "indexed": true
+      },
+      {
+        "name": "secret",
+        "type": "bytes32",
+        "indexed": false
+      },
+      {
+        "name": "resolver",
+        "type": "address",
+        "indexed": true
+      },
+      {
+        "name": "user",
+        "type": "address",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "EscrowCreated",
+    "inputs": [
+      {
+        "name": "secretHash",
+        "type": "bytes32",
+        "indexed": true
+      },
+      {
+        "name": "user",
+        "type": "address",
+        "indexed": true
+      },
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": true
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false
+      },
+      {
+        "name": "timelock",
+        "type": "uint256",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "EscrowClaimed",
+    "inputs": [
+      {
+        "name": "secretHash",
+        "type": "bytes32",
+        "indexed": true
+      },
+      {
+        "name": "resolver",
+        "type": "address",
+        "indexed": true
+      },
+      {
+        "name": "secret",
+        "type": "bytes32",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "EscrowRefunded",
+    "inputs": [
+      {
+        "name": "secretHash",
+        "type": "bytes32",
+        "indexed": true
+      },
+      {
+        "name": "user",
+        "type": "address",
+        "indexed": true
+      }
+    ]
+  }
+]

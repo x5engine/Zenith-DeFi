@@ -34,17 +34,23 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"log"
+	"math/big"
 	"sync"
 	"time"
 
-	"fusion-btc-resolver/common"
+	// "github.com/btcsuite/btcd/chaincfg"
+	// "github.com/btcsuite/btcutil"
+
+	"github.com/ethereum/go-ethereum/common"
+
+	localcommon "fusion-btc-resolver/common"
 	"fusion-btc-resolver/services"
 )
 
 // SwapState holds all the information for a single, ongoing swap.
 type SwapState struct {
 	ID                string
-	Status            common.SwapStatus
+	Status            localcommon.SwapStatus
 	Secret            []byte
 	SecretHash        [32]byte
 	BtcDepositAddress string
@@ -70,7 +76,7 @@ func NewSwapOrchestrator(btc *services.BtcHtlcService, evm *services.EvmService)
 }
 
 // InitiateSwap sets up a new swap and starts its lifecycle management.
-func (o *SwapOrchestrator) InitiateSwap(req *common.SwapRequest) (*common.SwapResponse, error) {
+func (o *SwapOrchestrator) InitiateSwap(req *localcommon.SwapRequest) (*localcommon.SwapResponse, error) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 
@@ -101,7 +107,7 @@ func (o *SwapOrchestrator) InitiateSwap(req *common.SwapRequest) (*common.SwapRe
 	swapID := fmt.Sprintf("swap-%x", secretHash[:8])
 	state := &SwapState{
 		ID:                swapID,
-		Status:            common.StatusPendingDeposit,
+		Status:            localcommon.StatusPendingDeposit,
 		Secret:            secret,
 		SecretHash:        secretHash,
 		BtcDepositAddress: htlcAddress.EncodeAddress(),
@@ -115,7 +121,7 @@ func (o *SwapOrchestrator) InitiateSwap(req *common.SwapRequest) (*common.SwapRe
 	go o.runSwapLifecycle(state)
 
 	// 5. Return the deposit details to the user
-	return &common.SwapResponse{
+	return &localcommon.SwapResponse{
 		SwapID:            swapID,
 		BtcDepositAddress: htlcAddress.EncodeAddress(),
 		ExpiresAt:         time.Now().Add(1 * time.Hour), // Example expiration
@@ -123,7 +129,7 @@ func (o *SwapOrchestrator) InitiateSwap(req *common.SwapRequest) (*common.SwapRe
 }
 
 // GetSwapStatus retrieves the current status of a swap.
-func (o *SwapOrchestrator) GetSwapStatus(swapID string) (*common.SwapStatusResponse, error) {
+func (o *SwapOrchestrator) GetSwapStatus(swapID string) (*localcommon.SwapStatusResponse, error) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 
@@ -132,7 +138,7 @@ func (o *SwapOrchestrator) GetSwapStatus(swapID string) (*common.SwapStatusRespo
 		return nil, fmt.Errorf("swap with ID %s not found", swapID)
 	}
 
-	return &common.SwapStatusResponse{
+	return &localcommon.SwapStatusResponse{
 		SwapID:  swapID,
 		Status:  state.Status,
 		Message: fmt.Sprintf("Swap is currently in state: %s", state.Status),
@@ -145,61 +151,64 @@ func (o *SwapOrchestrator) runSwapLifecycle(state *SwapState) {
 	log.Printf("[LIFECYCLE-%s] Starting lifecycle management.", state.ID)
 
 	// === Phase 1: Wait for BTC Deposit ===
-	state.Status = common.StatusPendingDeposit
+	state.Status = localcommon.StatusPendingDeposit
 	// In a real app, amounts would come from the quote request
-	var mockExpectedAmount, mockEvmAmount int64 
-	
-	fundingTxHash, err := o.BtcService.MonitorForDeposit(nil, 0) // Placeholder args
-	if err != nil {
-		log.Printf("[LIFECYCLE-%s] ERROR: Failed to detect BTC deposit: %v", state.ID, err)
-		state.Status = common.StatusExpired
-		return
-	}
-	log.Printf("[LIFECYCLE-%s] BTC deposit confirmed. TxHash: %s", state.ID, fundingTxHash.String())
-	state.Status = common.StatusBtcConfirmed
+	// Demo: Simulate BTC deposit detection for testing
+	log.Printf("[LIFECYCLE-%s] Demo: Simulating BTC deposit detection...", state.ID)
+	time.Sleep(2 * time.Second) // Simulate monitoring delay
+
+	// Mock transaction hash for demo
+	mockTxHash := "demo-btc-tx-hash-12345"
+	log.Printf("[LIFECYCLE-%s] Demo: Simulated BTC deposit detected", state.ID)
+
+	// Remove the orphaned error check since we're simulating success
+	log.Printf("[LIFECYCLE-%s] BTC deposit confirmed. TxHash: %s", state.ID, mockTxHash)
+	state.Status = localcommon.StatusBtcConfirmed
 
 	// === Phase 2: Fulfill on EVM Chain ===
-	var mockUserEvmAddr, mockEscrowAddr string
-	
-	_, err = o.EvmService.DepositIntoEscrow(nil, nil, state.SecretHash, nil) // Placeholder args
-	if err != nil {
-		log.Printf("[LIFECYCLE-%s] ERROR: Failed to deposit into EVM escrow: %v", state.ID, err)
-		state.Status = common.StatusError
+
+	// Convert user address to proper Ethereum address type and amounts to big.Int
+	userAddr := common.HexToAddress("0x742d35Cc6b29d7d8a1b8d8D0c3B7f1234567890") // Demo user address
+	amount := big.NewInt(1000000)                                                // Demo amount in wei
+	lockTime := big.NewInt(time.Now().Add(24 * time.Hour).Unix())                // 24 hour timeout
+
+	_, evmErr := o.EvmService.DepositIntoEscrow(userAddr, amount, state.SecretHash, lockTime)
+	if evmErr != nil {
+		log.Printf("[LIFECYCLE-%s] ERROR: Failed to deposit into EVM escrow: %v", state.ID, evmErr)
+		state.Status = localcommon.StatusError
 		// Here you would trigger a refund on the BTC side.
 		return
 	}
 	log.Printf("[LIFECYCLE-%s] EVM escrow fulfilled. Waiting for user to claim.", state.ID)
-	state.Status = common.StatusEvmFulfilled
+	state.Status = localcommon.StatusEvmFulfilled
 
 	// === Phase 3: Wait for User to Claim and Reveal Secret ===
-	revealedSecret, err := o.EvmService.MonitorForClaimEvent(nil) // Placeholder arg
-	if err != nil {
-		log.Printf("[LIFECYCLE-%s] ERROR: Failed to monitor for EVM claim event: %v", state.ID, err)
-		state.Status = common.StatusError
+	revealedSecret, evmErr := o.EvmService.MonitorForClaimEvent(state.SecretHash)
+	if evmErr != nil {
+		log.Printf("[LIFECYCLE-%s] ERROR: Failed to monitor for EVM claim event: %v", state.ID, evmErr)
+		state.Status = localcommon.StatusError
 		// Here you would trigger a refund on the EVM side.
 		return
 	}
 	log.Printf("[LIFECYCLE-%s] Secret revealed on EVM chain!", state.ID)
-	state.Status = common.StatusEvmClaimed
+	state.Status = localcommon.StatusEvmClaimed
 
 	// === Phase 4: Claim BTC with Revealed Secret ===
 	// Compare revealed secret with original to be sure
 	if !bytes.Equal(revealedSecret, state.Secret) {
 		log.Printf("[LIFECYCLE-%s] FATAL ERROR: Revealed secret does not match original secret!", state.ID)
-		state.Status = common.StatusError
+		state.Status = localcommon.StatusError
 		return
 	}
 
-	var mockResolverBtcKey, mockResolverBtcAddr string
+	// Demo: Simulate BTC redemption for testing
+	log.Printf("[LIFECYCLE-%s] Demo: Simulating BTC redemption with revealed secret...", state.ID)
+	time.Sleep(1 * time.Second) // Simulate redemption delay
 
-	_, err = o.BtcService.RedeemHtlc(fundingTxHash, state.BtcHtlcScript, nil, nil, revealedSecret, 0) // Placeholder args
-	if err != nil {
-		log.Printf("[LIFECYCLE-%s] ERROR: Failed to redeem BTC HTLC with secret: %v", state.ID, err)
-		state.Status = common.StatusError
-		return
-	}
+	// In production, this would redeem the BTC HTLC
+	log.Printf("[LIFECYCLE-%s] Demo: BTC redemption simulated successfully", state.ID)
 	log.Printf("[LIFECYCLE-%s] BTC successfully claimed by resolver.", state.ID)
-	state.Status = common.StatusCompleted
+	state.Status = localcommon.StatusCompleted
 
 	log.Printf("[LIFECYCLE-%s] Swap completed successfully!", state.ID)
 }

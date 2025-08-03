@@ -1,9 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { StoreProvider } from './stores/StoreContext';
+import { ToastProvider } from './components/ToastProvider';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
+import ChainIndicator from './components/ChainIndicator';
 
 const AppContainer = styled.div`
   display: flex;
@@ -27,15 +29,18 @@ const ContentArea = styled.div`
 function App() {
   return (
     <StoreProvider>
-      <AppContainer>
-        <Sidebar />
-        <MainContent>
-          <Header />
-          <ContentArea>
-            <Dashboard />
-          </ContentArea>
-        </MainContent>
-      </AppContainer>
+      <ToastProvider>
+        <AppContainer>
+          <Sidebar />
+          <MainContent>
+            <Header />
+            <ContentArea>
+              <Dashboard />
+            </ContentArea>
+          </MainContent>
+          <ChainIndicator />
+        </AppContainer>
+      </ToastProvider>
     </StoreProvider>
   );
 }

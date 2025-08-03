@@ -53,9 +53,8 @@ type BtcHtlcService struct {
 
 // NewBtcHtlcService creates a new instance of the Bitcoin HTLC service.
 func NewBtcHtlcService(cfg *config.BtcConfig) (*BtcHtlcService, error) {
-	// Note: In a real app, you'd have a mapping from chain ID or name to params.
-	// We are hardcoding RegressionNetParams for this example.
-	netParams := &chaincfg.RegressionNetParams
+	// Switch from regtest to testnet parameters. This is a critical change.
+	netParams := &chaincfg.TestNet3Params
 
 	connCfg := &rpcclient.ConnConfig{
 		Host:         cfg.RPCHost,

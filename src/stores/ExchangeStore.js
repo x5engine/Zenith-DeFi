@@ -8,6 +8,10 @@ class ExchangeStore {
     swapStatus = 'IDLE'; // e.g., IDLE, QUOTING, PENDING_DEPOSIT, CONFIRMED, etc.
     statusMessage = 'Please select tokens to begin.';
     confirmationCount = 0;
+    
+    // Transaction hashes for block explorer links
+    evmTxHash = null;
+    btcTxHash = null;
 
     // --- Dependencies (Injected) ---
     rootStore;
@@ -28,10 +32,30 @@ class ExchangeStore {
     async fetchQuote(params) {
         this.swapStatus = 'QUOTING';
         this.statusMessage = 'Fetching the best rate...';
+        
+        // Check network before getting quote
+        try {
+            const isNetworkCorrect = await this.walletService.ensureCorrectNetwork();
+            if (!isNetworkCorrect) {
+                runInAction(() => {
+                    this.swapStatus = 'ERROR';
+                    this.statusMessage = 'Please switch to Polygon Amoy to continue.';
+                });
+                return;
+            }
+        } catch (networkError) {
+            runInAction(() => {
+                this.swapStatus = 'ERROR';  
+                this.statusMessage = 'Please connect to Polygon Amoy.';
+            });
+            return;
+        }
+        
         try {
             const quoteResult = await this.apiService.getQuote(params);
             runInAction(() => {
-                this.quote = quoteResult;
+                // Process the raw API response into a formatted quote
+                this.quote = this.processQuoteResponse(quoteResult, params);
                 this.swapStatus = 'QUOTED';
                 this.statusMessage = 'Quote received. Please confirm.';
                 this.persistState();
@@ -46,6 +70,24 @@ class ExchangeStore {
 
     async initiateBtcSwap() {
         if (!this.quote) return;
+
+        // Check if user is on the correct network before proceeding
+        try {
+            const isNetworkCorrect = await this.walletService.ensureCorrectNetwork();
+            if (!isNetworkCorrect) {
+                runInAction(() => {
+                    this.swapStatus = 'ERROR';
+                    this.statusMessage = 'Please switch to Polygon Amoy in your wallet.';
+                });
+                return;
+            }
+        } catch (error) {
+            runInAction(() => {
+                this.swapStatus = 'ERROR';
+                this.statusMessage = 'Network check failed. Please ensure your wallet is connected.';
+            });
+            return;
+        }
 
         // ... (Implementation for getting refund key - see Change 3)
         const userEvmAddress = this.walletService.getConnectedAddress();
@@ -90,6 +132,15 @@ class ExchangeStore {
                     this.swapStatus = statusResponse.status;
                     this.statusMessage = statusResponse.message;
                     // this.confirmationCount = statusResponse.confirmationCount; // Backend should provide this
+                    
+                    // Store transaction hashes if provided by backend
+                    if (statusResponse.evmTxHash) {
+                        this.evmTxHash = statusResponse.evmTxHash;
+                    }
+                    if (statusResponse.btcTxHash) {
+                        this.btcTxHash = statusResponse.btcTxHash;
+                    }
+                    
                     this.persistState();
                 });
 
@@ -115,6 +166,8 @@ class ExchangeStore {
                 this.swapStatus = state.swapStatus || 'IDLE';
                 this.statusMessage = state.statusMessage || 'Please select tokens to begin.';
                 this.confirmationCount = state.confirmationCount || 0;
+                this.evmTxHash = state.evmTxHash || null;
+                this.btcTxHash = state.btcTxHash || null;
                 
                 // If there's an active swap, restart polling
                 if (this.swapId && this.swapStatus !== 'COMPLETED' && this.swapStatus !== 'ERROR') {
@@ -135,7 +188,9 @@ class ExchangeStore {
                 btcDepositAddress: this.btcDepositAddress,
                 swapStatus: this.swapStatus,
                 statusMessage: this.statusMessage,
-                confirmationCount: this.confirmationCount
+                confirmationCount: this.confirmationCount,
+                evmTxHash: this.evmTxHash,
+                btcTxHash: this.btcTxHash
             };
             localStorage.setItem('exchangeStoreState', JSON.stringify(state));
         } catch (error) {
@@ -145,15 +200,72 @@ class ExchangeStore {
 
     // Reset the store state
     reset() {
-        this.quote = null;
-        this.swapId = null;
-        this.btcDepositAddress = null;
-        this.swapStatus = 'IDLE';
-        this.statusMessage = 'Please select tokens to begin.';
-        this.confirmationCount = 0;
+        runInAction(() => {
+            this.quote = null;
+            this.swapId = null;
+            this.btcDepositAddress = null;
+            this.swapStatus = 'IDLE';
+            this.statusMessage = 'Ready to start a new swap. Select tokens and amount below.';
+            this.confirmationCount = 0;
+            this.evmTxHash = null;
+            this.btcTxHash = null;
+        });
         
         // Clear persisted state
         localStorage.removeItem('exchangeStoreState');
+    }
+
+    // Process raw API quote response into formatted quote
+    processQuoteResponse(apiResponse, requestParams) {
+        // Helper function to format token amounts
+        const formatAmount = (amountWei, decimals = 18) => {
+            const amount = Number(amountWei) / Math.pow(10, decimals);
+            return amount.toFixed(6).replace(/\.?0+$/, ''); // Remove trailing zeros
+        };
+
+        // Helper function to format time
+        const formatTime = (seconds) => {
+            if (seconds < 60) return `${seconds} seconds`;
+            const minutes = Math.round(seconds / 60);
+            return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+        };
+
+        // Map chain IDs to token symbols
+        const getTokenSymbol = (chainId, tokenAddress) => {
+            if (chainId === 0) return 'BTC'; // Bitcoin
+            if (chainId === 80002) { // Polygon Amoy
+                if (tokenAddress === '0x0000000000000000000000000000000000000000') return 'ETH';
+                if (tokenAddress.toLowerCase() === '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582') return 'USDC';
+                return 'TOKEN';
+            }
+            return 'TOKEN';
+        };
+
+        // Get token info from request params
+        const fromToken = getTokenSymbol(requestParams.fromChainId, requestParams.fromTokenAddress);
+        const toToken = getTokenSymbol(requestParams.toChainId, requestParams.toTokenAddress);
+        
+        // Format amounts
+        const fromAmount = formatAmount(requestParams.amount, fromToken === 'BTC' ? 8 : 18);
+        const toAmount = formatAmount(apiResponse.toTokenAmount, toToken === 'BTC' ? 8 : 18);
+        const feeAmount = formatAmount(apiResponse.fee, 18);
+        
+        // Calculate exchange rate
+        const rate = (Number(toAmount) / Number(fromAmount)).toFixed(6).replace(/\.?0+$/, '');
+
+        return {
+            // Original API response
+            ...apiResponse,
+            // Formatted fields for display
+            fromToken,
+            toToken,
+            fromAmount,
+            toAmount,
+            rate,
+            fee: feeAmount,
+            feeToken: 'ETH', // Fees are typically in ETH/native token
+            estimatedTime: formatTime(apiResponse.estimatedTime || 300)
+        };
     }
 
     // Getters for computed values
